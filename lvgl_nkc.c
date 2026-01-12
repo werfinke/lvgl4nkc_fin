@@ -4,7 +4,8 @@
 
 #include "./lvgl/lvgl.h"
 
-#define FB_ADDR   ((uint8_t *)0x800000)
+#define FB_ADDR   ((uint8_t *)0x80000)
+
 #define LV_HOR_RES_MAX   512
 #define LV_VER_RES_MAX   256
 
@@ -40,9 +41,6 @@ void my_disp_flush(lv_display_t *disp,
 
     lv_display_flush_ready(disp);
 }
-
-
-
 
 int main(int argc, char* argv[]) {
 

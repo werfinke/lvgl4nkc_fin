@@ -28,7 +28,7 @@
 #define LV_MEM_SIZE         (96U * 1024U)
 
 #define LV_MEM_ATTR
-#define LV_MEM_ADR	0
+#define LV_MEM_ADR	0x00c0000
 
 /*====================
  *  HAL SETTINGS
@@ -51,7 +51,7 @@
 
 #define LV_USE_LOG          0
 #define LV_USE_ASSERT_NULL  0
-#define LV_USE_ASSERT_MALLOC 0
+#define LV_USE_ASSERT_MALLOC 1
 #define LV_USE_ASSERT_STYLE 0
 
 /* No animations */
