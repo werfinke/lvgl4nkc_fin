@@ -83,9 +83,7 @@ int main(int argc, char* argv[]) {
     while (tick < 1000) {
 
         if ((tick % 100) == 0) {
-            DISABLE_CPU_INTERRUPTS;
             printf("%s %i\n", "ticks:", tick);
-            ENABLE_CPU_INTERRUPTS; 
         }
         
         lv_timer_handler();   /* must be called periodically */

@@ -112,7 +112,7 @@ transfer:
 	netsh wlan connect name="TP-Link_Extender"
 
 # send file to NKC
-	tftp -i 192.168.0.101 PUT _out/lvgl_nkc.68k
+	tftp -i 192.168.0.100 PUT _out/lvgl_nkc.68k
 
 # switch WiFi back
 	netsh wlan disconnect
