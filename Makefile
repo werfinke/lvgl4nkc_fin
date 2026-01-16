@@ -58,9 +58,7 @@ OUTDIR=./_out/
 OBJPATH = ./obj
 
 # List of objects
-#OBJS=$(ASM_SRCS:.s=.o) $(CSRCS:.c=.o)
 OBJS           = $(addprefix $(OBJPATH)/, $(addsuffix .o, $(notdir $(basename $(CSRCS)))))
-#OBJS          += $(addprefix $(OBJPATH)/, $(addsuffix .o, $(notdir $(basename $(ASM_SRCS)))))
 
 PROGS=$(OUTDIR)$(TARGET).elf
 LIST=$(PROGS:.elf=.lst)
@@ -68,12 +66,6 @@ LIST=$(PROGS:.elf=.lst)
 all:: createdirs $(PROGS) create_bin
 
 clean_all: clean all
-
-#$(OBJPATH)/%.o : %.c
-#	$(CC) -flto $(CFLAGS) -c $< -o $@
-#$(OBJPATH)/%.o : %.s
-#	$(AS) $(ASFLAGS)  $< -o $@
-$(eval USE_ENC:;@:)
 
 createdirs:
 	-@mkdir $(OUTDIR) 2>/dev/null || echo "" >/dev/null
@@ -108,14 +100,12 @@ transfer:
 
 # switch WiFi
 	netsh wlan disconnect
-	sleep 1
 	netsh wlan connect name="TP-Link_Extender"
 
 # send file to NKC
-	tftp -i 192.168.0.100 PUT _out/lvgl_nkc.68k
+	tftp -i 192.168.0.100 PUT $(OUTDIR)$(TARGET).68k
 
 # switch WiFi back
 	netsh wlan disconnect
-	sleep 1
 	netsh wlan connect name="iJumeirah"
 
