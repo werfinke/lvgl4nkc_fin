@@ -67,11 +67,16 @@ void my_disp_flush(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map)
     int32_t h = area->y2 - area->y1 + 1;
 
     #define FB_BASE_ADDR ((uintptr_t)GDP_MEM_PAGE0)
-    static uint8_t * const fb = (uint8_t *)FB_BASE_ADDR;
+    //static uint8_t * const fb = (uint8_t *)FB_BASE_ADDR;
 
     for(int32_t y = 0; y < h; y++) {
-        uint8_t * dst = fb + (area->y1 + y) * FB_STRIDE_BYTES + area->x1;
+        //uint8_t * dst = fb + (area->y1 + y) * FB_STRIDE_BYTES + area->x1;
         uint8_t * src = px_map + y * w;
+
+        int32_t fb_y = (LV_VER_RES_MAX - 1) - (area->y1 + y);
+        uint8_t *dst = (uint8_t*)GDP_MEM_PAGE0
+                     + fb_y * FB_STRIDE_BYTES
+                     + area->x1;
 
         for(int32_t x = 0; x < w; x++) {
             dst[x] = l8_to_rgb332(src[x]);
@@ -94,7 +99,7 @@ int main(int argc, char* argv[]) {
     DISABLE_CPU_INTERRUPTS;
     hardware_init();
 
-    #define BUF_LINES 64
+    #define BUF_LINES 16
     static uint8_t buf1[LV_HOR_RES_MAX * BUF_LINES];
     static lv_display_t *disp;
 
@@ -129,42 +134,55 @@ int main(int argc, char* argv[]) {
     //lv_obj_set_style_text_color(lv_screen_active(), lv_color_hex(0xffffff), LV_PART_MAIN);
     //lv_obj_align(label1, LV_ALIGN_CENTER, 0, 0);
 
+    lv_obj_t * label1 = lv_label_create(lv_screen_active());
+    lv_label_set_text(label1, "TOP_LEFT");
+    lv_obj_align(label1, LV_ALIGN_TOP_LEFT, 0, 0);
+
     lv_obj_t * label2 = lv_label_create(lv_screen_active());
-    lv_label_set_text(label2, "Hello LVGL");
-    lv_obj_align(label2, LV_ALIGN_CENTER, 0, 5);
+    lv_label_set_text(label2, "TOP_MID");
+    lv_obj_align(label2, LV_ALIGN_TOP_MID, 0, 0);
 
-    //lv_obj_t * label3 = lv_label_create(lv_screen_active());
-    //lv_label_set_text(label3, "Hello LVGL");
-    //lv_obj_align(label3, LV_ALIGN_CENTER, 0, -5);
+    lv_obj_t * label3 = lv_label_create(lv_screen_active());
+    lv_label_set_text(label3, "TOP_RIGHT");
+    lv_obj_align(label3, LV_ALIGN_TOP_RIGHT, 0, 0);
 
-    //lv_obj_t * label4 = lv_label_create(lv_screen_active());
-    //lv_label_set_text(label4, "Hello LVGL");
-    //lv_obj_align(label4, LV_ALIGN_BOTTOM_MID, 0, -5);
+
+    lv_obj_t * label4 = lv_label_create(lv_screen_active());
+    lv_label_set_text(label4, "BOTTOM_LEFT");
+    lv_obj_align(label4, LV_ALIGN_BOTTOM_LEFT, 0, 0);
+
+    lv_obj_t * label5 = lv_label_create(lv_screen_active());
+    lv_label_set_text(label5, "BOTTOM_MID");
+    lv_obj_align(label5, LV_ALIGN_BOTTOM_MID, 0, 0);
+
+    lv_obj_t * label6 = lv_label_create(lv_screen_active());
+    lv_label_set_text(label6, "BOTTOM_RIGHT");
+    lv_obj_align(label6, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
+
+
+    lv_obj_t * label7 = lv_label_create(lv_screen_active());
+    lv_label_set_text(label7, "LEFT_MID");
+    lv_obj_align(label7, LV_ALIGN_LEFT_MID, 0, 0);
+
+    lv_obj_t * label8 = lv_label_create(lv_screen_active());
+    lv_label_set_text(label8, "CENTER");
+    lv_obj_align(label8, LV_ALIGN_CENTER, 0, 0);
+
+    lv_obj_t * label9 = lv_label_create(lv_screen_active());
+    lv_label_set_text(label9, "RIGHT_MID");
+    lv_obj_align(label9, LV_ALIGN_RIGHT_MID, 0, 0);
 
     printf("%s\n", "do lvgl event loop...");
     
     tick = 0;
     ENABLE_CPU_INTERRUPTS; 
 
-    int iterations = 0;
-
     while (tick < 5000) {
 
-        if ((tick % 100) == 0) {
-            //printf("%s %i\n", "ticks:", tick);
-        }
-        
-        if (iterations == 500) {
-            //lv_obj_t * label5 = lv_label_create(lv_screen_active());
-            //lv_label_set_text(label5, "bobo");
-            //lv_obj_align(label5, LV_ALIGN_CENTER, 0, -5);
-        }
+        //do someting
 
-        iterations++;
         lv_timer_handler();   /* must be called periodically */
     }
-
-    printf("%s\n", "...bye !");
 
 	return 0;
 }
