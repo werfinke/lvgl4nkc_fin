@@ -9,7 +9,7 @@ LVGL Grafikbibliothek adaptiert für den 68k NKC auf FPGA-GDP Basis ("TangNano N
    
    make
 
-5) .m68 executable ist in ...\lvgl4nkc\_out
+5) .m68 executable ist in ...\lvgl4nkc\\_out
 
 
 Mehr Infos zu LVGL gibt's hier: https://lvgl.io/
