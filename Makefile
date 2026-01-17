@@ -21,7 +21,6 @@
 #
 # Host generic commands
 RM=rm -f
-#RM=del
 MV=mv -f
 INSTALL=cp
 
@@ -43,8 +42,6 @@ LIBDIRS =  -L$(COMMON_DIR) #-L/c/src/LVGLNKC/lvgl
 LIBS =  -llvgl
 
 CFLAGS= -Os -m68000 -Wall -DCPU=2 -Wno-unused-variable -Wno-unused-but-set-variable -Wno-switch -fomit-frame-pointer -nostartfiles -std=gnu99 -ffunction-sections -fdata-sections -Dndrcomp -DUSE_JADOS $(ISEARCH)
-
-ASFLAGS= #-DM68000
 
 # Linker Flags
 LDFLAGS= -T $(COMMON_DIR)rm_ram1.ld -Wl,-Map,$(OUTDIR)$(TARGET).map $(LIBDIRS)
@@ -96,7 +93,6 @@ clean:
 	$(RM) $(OBJS) *.o
 
 transfer:
-#	C:/Users/USER/source/repos/NKCtransfer/NKCtransfer/bin/Debug/NKCtransfer COM3 2000000 00000 $(OUTDIR)$(TARGET).s19 START
 
 # switch WiFi
 	netsh wlan disconnect
