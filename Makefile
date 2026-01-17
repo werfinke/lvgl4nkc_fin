@@ -99,9 +99,11 @@ transfer:
 	netsh wlan connect name="TP-Link_Extender"
 
 # send file to NKC
-	tftp -i 192.168.0.100 PUT $(OUTDIR)$(TARGET).68k
+	tftp -i 192.168.0.100 PUT $(OUTDIR)$(TARGET).68k &
+	tftp -i 192.168.0.101 PUT $(OUTDIR)$(TARGET).68k &
 
 # switch WiFi back
+	sleep 20
 	netsh wlan disconnect
 	netsh wlan connect name="iJumeirah"
 

@@ -27,8 +27,7 @@
  *====================*/
 
 /** Color depth: 1 (I1), 8 (L8), 16 (RGB565), 24 (RGB888), 32 (XRGB8888) */
-#define LV_COLOR_DEPTH 16        /* smed: internal default, OK to leave at 16 */
-#define LV_COLOR_FORMAT_RGB332 1 /* Enable RGB332 support (important!) */
+#define LV_COLOR_DEPTH 8         /* smed */
 #define LV_COLOR_16_SWAP 0       /* Byte order (irrelevant for RGB332 but keep defined) */
 
 /*=========================
@@ -175,14 +174,14 @@
      * - gradients use RGB888
      * - bitmaps with transparency may use ARGB8888
      */
-    #define LV_DRAW_SW_SUPPORT_RGB565       1
+    #define LV_DRAW_SW_SUPPORT_RGB565       0
     #define LV_DRAW_SW_SUPPORT_RGB565_SWAPPED       0
     #define LV_DRAW_SW_SUPPORT_RGB565A8     0
-    #define LV_DRAW_SW_SUPPORT_RGB888       0
+    #define LV_DRAW_SW_SUPPORT_RGB888       1
     #define LV_DRAW_SW_SUPPORT_XRGB8888     0
-    #define LV_DRAW_SW_SUPPORT_ARGB8888     0
+    #define LV_DRAW_SW_SUPPORT_ARGB8888     1
     #define LV_DRAW_SW_SUPPORT_ARGB8888_PREMULTIPLIED 0
-    #define LV_DRAW_SW_SUPPORT_L8           0
+    #define LV_DRAW_SW_SUPPORT_L8           1
     #define LV_DRAW_SW_SUPPORT_AL88         0
     #define LV_DRAW_SW_SUPPORT_A8           0
     #define LV_DRAW_SW_SUPPORT_I1           0
@@ -463,7 +462,7 @@
 
     /** - 1: Enable printing timestamp;
      *  - 0: Disable printing timestamp. */
-    #define LV_LOG_USE_TIMESTAMP 0
+    #define LV_LOG_USE_TIMESTAMP 1
 
     /** - 1: Print file and line number of the log;
      *  - 0: Do not print file and line number of the log. */
