@@ -19,6 +19,9 @@
 
 #define FB_STRIDE_BYTES 512
 
+static lv_obj_t * label;
+
+
 static uint8_t l8_to_332_lut[256];
 
 int tick = 0;
@@ -94,13 +97,38 @@ void my_disp_flush(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map)
     lv_display_flush_ready(disp);
 }
 
+
+static void btn_event_cb(lv_event_t * e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t * btn = lv_event_get_target_obj(e);
+    if(code == LV_EVENT_CLICKED) {
+        static uint8_t cnt = 0;
+        cnt++;
+
+        /*Get the first child of the button which is the label and change its text*/
+        lv_obj_t * label = lv_obj_get_child(btn, 0);
+        lv_label_set_text_fmt(label, "NKC: %d", cnt);
+    }
+}
+
+static void slider_event_cb(lv_event_t * e)
+{
+    lv_obj_t * slider = lv_event_get_target_obj(e);
+
+    /*Refresh the text*/
+    lv_label_set_text_fmt(label, "%" LV_PRId32, lv_slider_get_value(slider));
+    lv_obj_align_to(label, slider, LV_ALIGN_OUT_TOP_MID, 0, -15);    /*Align top of the slider*/
+}
+
+
 int main(int argc, char* argv[]) {
 
     DISABLE_CPU_INTERRUPTS;
     hardware_init();
 
     #define BUF_LINES 16
-    static uint8_t buf1[LV_HOR_RES_MAX * BUF_LINES];
+    static uint8_t buf1[LV_HOR_RES_MAX * BUF_LINES] __attribute__((aligned(LV_DRAW_BUF_ALIGN)));
     static lv_display_t *disp;
 
     printf("%s %p\n", "GDP video memory at : ", (void*) GDP_MEM_PAGE0);
@@ -123,7 +151,7 @@ int main(int argc, char* argv[]) {
     lv_display_set_flush_cb(disp, my_disp_flush);
 
     /*Change the active screen's background color*/
-    //lv_obj_set_style_bg_color(lv_screen_active(), lv_color_hex(0x80), LV_PART_MAIN);
+    lv_obj_set_style_bg_color(lv_screen_active(), lv_color_hex(0x808080), LV_PART_MAIN);
 
     /*Create a white label, set its text and align it to the center*/
 
@@ -164,13 +192,34 @@ int main(int argc, char* argv[]) {
     lv_label_set_text(label7, "LEFT_MID");
     lv_obj_align(label7, LV_ALIGN_LEFT_MID, 0, 0);
 
-    lv_obj_t * label8 = lv_label_create(lv_screen_active());
-    lv_label_set_text(label8, "CENTER");
-    lv_obj_align(label8, LV_ALIGN_CENTER, 0, 0);
+
 
     lv_obj_t * label9 = lv_label_create(lv_screen_active());
     lv_label_set_text(label9, "RIGHT_MID");
     lv_obj_align(label9, LV_ALIGN_RIGHT_MID, 0, 0);
+
+    lv_obj_t * btn = lv_button_create(lv_screen_active());     /*Add a button the current screen*/
+    lv_obj_set_pos(btn, 10, 10);                            /*Set its position*/
+    lv_obj_set_size(btn, 120, 50);                          /*Set its size*/
+    lv_obj_add_event_cb(btn, btn_event_cb, LV_EVENT_ALL, NULL);           /*Assign a callback to the button*/
+
+    lv_obj_t * label = lv_label_create(btn);          /*Add a label to the button*/
+    lv_label_set_text(label, "NKC");                     /*Set the labels text*/
+    lv_obj_center(label);
+
+    /*Create a slider in the center of the display*/
+    lv_obj_t * slider = lv_slider_create(lv_screen_active());
+    lv_obj_set_width(slider, 200);                          /*Set the width*/
+    lv_obj_center(slider);                                  /*Align to the center of the parent (screen)*/
+    lv_obj_add_event_cb(slider, slider_event_cb, LV_EVENT_VALUE_CHANGED, NULL);     /*Assign an event function*/
+
+    /*Create a label above the slider*/
+    label = lv_label_create(lv_screen_active());
+    lv_label_set_text(label, "0");
+    lv_obj_align_to(label, slider, LV_ALIGN_OUT_TOP_MID, 0, -15);    /*Align top of the slider*/
+
+
+
 
     printf("%s\n", "do lvgl event loop...");
     
