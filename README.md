@@ -1,5 +1,6 @@
 LVGL Grafikbibliothek adaptiert für den 68k NKC auf FPGA-GDP Basis ("TangNano NKC", "SOC NKC") 
 
+How to use:
 1) im Verzeichnis ../lvgl4nkc/lvgl
    
    make            
