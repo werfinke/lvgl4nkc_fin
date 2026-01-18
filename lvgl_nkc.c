@@ -19,8 +19,120 @@
 
 #define FB_STRIDE_BYTES 512
 
+static lv_indev_t * indev_mouse;
+volatile int16_t mouse_x = 0;
+volatile int16_t mouse_y = 0;
+
+#define CURSOR_FG_COL (uint16_t)0xFFFFFFu
+#define CURSOR_BG_COL (uint16_t)0x808080u
+
+const lv_image_dsc_t img_cursor_16;  /* your cursor image */
+
+/* 16x16 mouse cursor, L8 */
+static const uint8_t cursor_map_l8[16 * 16] __attribute__((aligned(LV_DRAW_BUF_ALIGN))) = {
+
+    CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
+    CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
+
+    CURSOR_FG_COL, CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
+    CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
+
+    CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
+    CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
+
+    CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
+    CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
+
+    CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
+    CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
+
+    CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
+    CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
+
+    CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_FG_COL, CURSOR_BG_COL,
+    CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
+
+    CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_FG_COL,
+    CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
+
+    CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
+    CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
+
+    CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
+    CURSOR_BG_COL, CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
+
+    CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_FG_COL, CURSOR_FG_COL, CURSOR_FG_COL, CURSOR_FG_COL, CURSOR_FG_COL, CURSOR_BG_COL,
+    CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
+
+    CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
+    CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
+
+    CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
+    CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
+
+    CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
+    CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
+
+    CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
+    CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
+
+    CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
+    CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
+
+};
+
+const lv_image_dsc_t img_mouse_cursor = {
+    .header = {
+        .cf = LV_COLOR_FORMAT_L8,
+        .w  = 16,
+        .h  = 16,
+        .stride = 16,
+        .magic = LV_IMAGE_HEADER_MAGIC
+    },
+    .data_size = sizeof(cursor_map_l8),
+    .data = cursor_map_l8,
+};
+
+
+void mouse_attach_cursor(void)
+{
+    lv_obj_t * cursor = lv_image_create(lv_screen_active());
+    lv_image_set_src(cursor, &img_mouse_cursor);
+
+    /* Always on top */
+    lv_obj_add_flag(cursor, LV_OBJ_FLAG_FLOATING);
+
+    lv_indev_set_cursor(indev_mouse, cursor);
+}
+
 static lv_obj_t * label;
 
+static void mouse_read_cb(lv_indev_t * indev, lv_indev_data_t * data)
+{
+    (void) indev;
+
+    //printf("%s\n", "Piiep!");
+
+    static int16_t dx = 0;
+    static int16_t dy = 0;
+    gp_get_mouse(&dx, &dy);  //rel. change since last poll
+
+    mouse_x += dx;
+    mouse_y += dy;
+
+    int16_t x = mouse_x;
+    int16_t y = mouse_y;
+
+    if(x < 0) x = 0;
+    if(y < 0) y = 0;
+    if(x >= (int16_t)LV_HOR_RES_MAX) x = (int16_t)LV_HOR_RES_MAX - 1;
+    if(y >= (int16_t)LV_VER_RES_MAX) y = (int16_t)LV_VER_RES_MAX - 1;
+
+    data->point.x = x;    //debug
+    data->point.y = y;
+
+    //data->state = mouse_left ? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
+}
 
 static uint8_t l8_to_332_lut[256];
 
@@ -91,7 +203,7 @@ void my_disp_flush(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map)
         }
     }
     
-    //debug - to see multiple disp_flush runs, as per defined BUF_LINES
+    //debug - to see multiple disp_flush runs, as per defined in BUF_LINES
     /*gp_moveto((int)area->x1, 256-(int)area->y1);
     gp_drawto((int)area->x1, 256-(int)area->y2);
     gp_drawto((int)area->x2, 256-(int)area->y2);
@@ -147,6 +259,7 @@ int main(int argc, char* argv[]) {
     //memset((void*)GDP_MEM_PAGE0+(512*256), 0x55, 512);
 
     lv_init();
+
     disp = lv_display_create(LV_HOR_RES_MAX, LV_VER_RES_MAX);
     lv_display_set_color_format(disp, LV_COLOR_FORMAT_L8);
     lut_init();
@@ -157,6 +270,22 @@ int main(int argc, char* argv[]) {
     /*Change the active screen's background color*/
     lv_obj_set_style_bg_color(lv_screen_active(), lv_color_hex(0x808080), LV_PART_MAIN);
     lv_obj_set_style_text_font(lv_screen_active(), &lv_font_montserrat_10, LV_PART_MAIN);
+
+    //define mouse, display needs to be created first
+    indev_mouse = lv_indev_create();
+    lv_indev_set_type(indev_mouse, LV_INDEV_TYPE_POINTER);
+    lv_indev_set_read_cb(indev_mouse, mouse_read_cb);
+
+    lv_obj_t * cursor = lv_image_create(lv_screen_active());
+    lv_image_set_src(cursor, &img_cursor_16);
+    lv_obj_add_flag(cursor, LV_OBJ_FLAG_FLOATING);
+    lv_indev_set_cursor(indev_mouse, cursor);
+
+    mouse_attach_cursor();
+
+
+
+
 
 
     /*Create UI */

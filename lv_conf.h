@@ -22,6 +22,8 @@
 #include "my_include.h"
 #endif
 
+#define LV_USE_INDEV 1
+
 /*====================
    COLOR SETTINGS
  *====================*/
@@ -471,7 +473,7 @@
     /* Enable/disable LV_LOG_TRACE in modules that produces a huge number of logs. */
     #define LV_LOG_TRACE_MEM        0   /**< Enable/disable trace logs in memory operations. */
     #define LV_LOG_TRACE_TIMER      0   /**< Enable/disable trace logs in timer operations. */
-    #define LV_LOG_TRACE_INDEV      0   /**< Enable/disable trace logs in input device operations. */
+    #define LV_LOG_TRACE_INDEV      1   /**< Enable/disable trace logs in input device operations. */
     #define LV_LOG_TRACE_DISP_REFR  0   /**< Enable/disable trace logs in display re-draw operations. */
     #define LV_LOG_TRACE_EVENT      0   /**< Enable/disable trace logs in event dispatch logic. */
     #define LV_LOG_TRACE_OBJ_CREATE 0   /**< Enable/disable trace logs in object creation (core `obj` creation plus every widget). */
