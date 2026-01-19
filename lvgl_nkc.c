@@ -109,27 +109,22 @@ static lv_obj_t * label;
 
 static void mouse_read_cb(lv_indev_t * indev, lv_indev_data_t * data)
 {
-    (void) indev;
+    //(void) indev;
 
-    //printf("%s\n", "Piiep!");
-
-    static int16_t dx = 0;
-    static int16_t dy = 0;
+    static int16_t dx;
+    static int16_t dy;
     gp_get_mouse(&dx, &dy);  //rel. change since last poll
 
     mouse_x += dx;
     mouse_y += -dy;
 
-    int16_t x = mouse_x;
-    int16_t y = mouse_y;
+    if(mouse_x < 0) mouse_x = 0;
+    if(mouse_y < 0) mouse_y = 0;
+    if(mouse_x >= (int16_t)LV_HOR_RES_MAX) mouse_x = (int16_t)LV_HOR_RES_MAX - 1;
+    if(mouse_y >= (int16_t)LV_VER_RES_MAX) mouse_y = (int16_t)LV_VER_RES_MAX - 1;
 
-    if(x < 0) x = 0;
-    if(y < 0) y = 0;
-    if(x >= (int16_t)LV_HOR_RES_MAX) x = (int16_t)LV_HOR_RES_MAX - 1;
-    if(y >= (int16_t)LV_VER_RES_MAX) y = (int16_t)LV_VER_RES_MAX - 1;
-
-    data->point.x = x;    //debug
-    data->point.y = y;
+    data->point.x = mouse_x;  
+    data->point.y = mouse_y;
 
     //data->state = mouse_left ? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
 }
