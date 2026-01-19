@@ -23,8 +23,8 @@ static lv_indev_t * indev_mouse;
 volatile int16_t mouse_x = 0;
 volatile int16_t mouse_y = 0;
 
-#define CURSOR_FG_COL (uint16_t)0xFFFFFFu
-#define CURSOR_BG_COL (uint16_t)0x808080u
+#define CURSOR_FG_COL (uint8_t)0xFFu
+#define CURSOR_BG_COL (uint8_t)0x80u
 
 const lv_image_dsc_t img_cursor_16;  /* your cursor image */
 
@@ -118,7 +118,7 @@ static void mouse_read_cb(lv_indev_t * indev, lv_indev_data_t * data)
     gp_get_mouse(&dx, &dy);  //rel. change since last poll
 
     mouse_x += dx;
-    mouse_y += dy;
+    mouse_y += -dy;
 
     int16_t x = mouse_x;
     int16_t y = mouse_y;
@@ -351,7 +351,7 @@ int main(int argc, char* argv[]) {
     tick = 0;
     ENABLE_CPU_INTERRUPTS; 
 
-    while (tick < 5000) {
+    while (tick < 10000) {
 
         //do someting
 
