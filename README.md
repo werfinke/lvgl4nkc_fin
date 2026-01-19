@@ -17,7 +17,7 @@ Infos
    - lvgl_nkc.c line 94: nuetzlich um aktuellen disp_flush() Bereich zu sehen
    - FPGA-GDP video memory hat color format RGB332, LVGL 9.5 ueterstuetzt dies nicht mehr direkt, Situation ist nicht ganz klar daher ist LVGL bis auf Weiteres als L8 color format (greyscale) konfiguriert, zZT sind die Farben nicht korrekt eventuell ist es besser auf LVGL 8.3.11 umzusteigen (last Version supporting RGB332), oder das Format der GDP-FPGA auf ein LVGL unterstütztes umzustellen.
    - Calendar widget wird nicht korrekt plaziert, y pos falsch
-   - rudimentärer NKC Maus support implementiert
+   - rudimentärer NKC Maus support implementiert, noch ohne click
      
 Mehr Infos zu LVGL gibt's hier: https://lvgl.io/
 
