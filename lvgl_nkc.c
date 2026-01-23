@@ -274,11 +274,13 @@ static void btn_event_cb(lv_event_t * e)
 
 static void slider_event_cb(lv_event_t * e)
 {
+    lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t * slider = lv_event_get_target_obj(e);
 
-    /*Refresh the text*/
-    lv_label_set_text_fmt(label, "%" LV_PRId32, (int)lv_slider_get_value(slider));
-    lv_obj_align_to(label, slider, LV_ALIGN_OUT_TOP_MID, 0, -15);    /*Align top of the slider*/
+    if(code == LV_EVENT_VALUE_CHANGED) {
+        lv_label_set_text_fmt(label, "%" LV_PRId32, (int)lv_slider_get_value(slider));
+        lv_obj_align_to(label, slider, LV_ALIGN_OUT_TOP_MID, 0, -15);    /*Align top of the slider*/
+    }
 }
 
 
