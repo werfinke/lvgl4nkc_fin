@@ -15,13 +15,14 @@
 #define GDP_MEM_PAGE3 ((void *)0x8C0000u)
 
 #define LV_HOR_RES_MAX   512
-#define LV_VER_RES_MAX   256
+#define LV_VER_RES_MAX   256  //change in GP: T=IO setzen, Adr: $7f  Data:1
 
 #define FB_STRIDE_BYTES 512
 
 static lv_indev_t * indev_mouse;
 volatile int16_t mouse_x = 0;
 volatile int16_t mouse_y = 0;
+volatile uint8_t old_mouse_keys;
 
 #define CURSOR_FG_COL (uint8_t)32u
 #define CURSOR_BG_COL (uint8_t)128u
@@ -31,14 +32,25 @@ const lv_image_dsc_t img_cursor;  /* your cursor image */
 //muss woanders hin
 #define BYTE_AT(adr) (*(unsigned char  volatile *) adr)
 
-#define FPGA_GDP_FCOL_REG BYTE_AT(0xFFFFFFA0)
-#define FPGA_GDP_BCOL_REG BYTE_AT(0xFFFFFFA1)
+#define FPGA_GDP_FCOL_REG BYTE_AT(0xFFFFFF40)
+#define FPGA_GDP_BCOL_REG BYTE_AT(0xFFFFFF42)
 
-#define FPGA_GDP_CULT_REG     BYTE_AT(0xFFFFFFA4)  // active color entry
-#define FPGA_GDP_CULT_MSB_REG BYTE_AT(0xFFFFFFA5)  // 1bit
-#define FPGA_GDP_CULT_LSB_REG BYTE_AT(0xFFFFFFA6)  // 8bit
+#define FPGA_GDP_CULT_REG     BYTE_AT(0xFFFFFF48)  // active color entry
+#define FPGA_GDP_CULT_MSB_REG BYTE_AT(0xFFFFFF4A)  // 1bit
+#define FPGA_GDP_CULT_LSB_REG BYTE_AT(0xFFFFFF4C)  // 8bit   */
 
-void GDP_WAIT() {};
+#define FPGA_GDP_MODE BYTE_AT(0xFFFFFFEE)  //FPGA-GDP Graphics mode
+
+static inline __attribute__((always_inline)) void GDP_WAIT(void) {
+   while(!(GDP.cmd & 0x04u)) {};
+}
+
+void gp_gmode() {
+
+    GDP_WAIT();
+    FPGA_GDP_MODE = 0b00000001;
+
+}
 
 static void initCULT_local() {
 
@@ -99,10 +111,6 @@ static void initCULT_local() {
   }
   printf("%s\n", "");
 
-  memset((void*)GDP_MEM_PAGE0+(512*  0), 8, 512);  //just upper 4 bit = 0100 = 4 = RED
-  memset((void*)GDP_MEM_PAGE0+(512*128), 3, 512);  //just upper 4 bit = 0101 = 5 = BLUE
-  memset((void*)GDP_MEM_PAGE0+(512*256), 5, 512);  //just upper 4 bit = 0011 = 2 = YELLOW
-
   FPGA_GDP_BCOL_REG = WHITE;
   FPGA_GDP_FCOL_REG = YELLOW;
 }
@@ -142,14 +150,11 @@ static lv_obj_t * label;
 
 static void mouse_read_cb(lv_indev_t * indev, lv_indev_data_t * data)
 {
-    
-
     //(void) indev;
 
-    static int16_t dx;
-    static int16_t dy;
-
-    gp_get_mouse(&dx, &dy);  //rel. change since last poll
+    static int16_t dx = 0;
+    static int16_t dy = 0;
+    const uint8_t keys = gp_get_mouse(&dx, &dy);  //rel. change since last poll
    
     mouse_x += dx;
     mouse_y += -dy;
@@ -162,7 +167,15 @@ static void mouse_read_cb(lv_indev_t * indev, lv_indev_data_t * data)
     data->point.x = mouse_x;  
     data->point.y = mouse_y;
 
-    //data->state = mouse_left ? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
+    if (((keys & ~old_mouse_keys) & L_BUTTON) != 0u) {
+        data->state = LV_INDEV_STATE_PRESSED;    
+    } else {
+        data->state = LV_INDEV_STATE_RELEASED;
+    }
+
+    data->continue_reading = false;
+
+    old_mouse_keys = keys;
 }
 
 static uint8_t l8_to_332_lut[256];
@@ -175,9 +188,10 @@ void doTick() {
 }
 
 void hardware_init() {
-    gp_clearscreen();  //set video memory to black for all 4 pages
-    //initCULT_local();
-    _clock(&doTick);
+    if (LV_VER_RES_MAX == 512) {GDP_WAIT(); FPGA_GDP_MODE = 0b00000001;}  //512 x 512 mode, obacht: colors change !
+    gp_clearscreen();  
+    initCULT_local();  //not working
+    _clock(&doTick); 
 }
 
 static inline uint8_t l8_to_rgb332(uint8_t v)
@@ -224,13 +238,10 @@ void my_disp_flush(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map)
         memcpy(dst, src, w);
     }
     
-    //for (int i=0; i < 256; i++) {
-    //
-    //    memset((void*)GDP_MEM_PAGE0+(512*  i), i, 512);
-    //}
-
-    //memset((void*)GDP_MEM_PAGE0+(512*128), 2, 512);
-    //memset((void*)GDP_MEM_PAGE0+(512*256), 3, 512);
+    /* all colors on screen */
+    /*for (int i=0; i < 256; i++) {
+        memset((void*)GDP_MEM_PAGE0+(512*  i), i, 512);
+    }*/
 
     /*debug - to see disp_flush runs, as per defined in BUF_LINES
     gp_moveto((int)area->x1, 256-(int)area->y1);
@@ -254,6 +265,10 @@ static void btn_event_cb(lv_event_t * e)
         /*Get the first child of the button which is the label and change its text*/
         lv_obj_t * label = lv_obj_get_child(btn, 0);
         lv_label_set_text_fmt(label, "NKC: %d", cnt);
+
+        for (int i=0; i < 256; i++) {
+            memset((void*)GDP_MEM_PAGE0+(512*  i), i, 512);
+        }
     }
 }
 
@@ -354,6 +369,13 @@ int main(int argc, char* argv[]) {
     lv_obj_set_width(slider, 200);                          /*Set the width*/
     lv_obj_center(slider);                                  /*Align to the center of the parent (screen)*/
     lv_obj_add_event_cb(slider, slider_event_cb, LV_EVENT_VALUE_CHANGED, NULL);     /*Assign an event function*/
+    lv_obj_set_style_bg_color(slider, lv_color_hex(0x010101), LV_PART_MAIN);
+    lv_obj_set_style_bg_color(slider, lv_color_hex(0xaaaaaa), LV_PART_INDICATOR);
+    lv_obj_set_style_bg_color(slider, lv_color_hex(0x555555), LV_PART_KNOB);
+
+
+
+
 
     /*Create a label above the slider*/
     label = lv_label_create(lv_screen_active());
@@ -366,12 +388,14 @@ int main(int argc, char* argv[]) {
     tick = 0;
     ENABLE_CPU_INTERRUPTS; 
 
-    while (tick < 5000) {
+    while (tick < 10000) {
 
         //do someting
 
         lv_timer_handler();   /* must be called periodically */
     }
 
+    GDP_WAIT(); FPGA_GDP_MODE = 0b00000000;  //switch back to 512*256
+    gp_clearscreen();
 	return 0;
 }
