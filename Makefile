@@ -41,10 +41,10 @@ ISEARCH = -I. -I$(COMMON_DIR)
 LIBDIRS =  -L$(COMMON_DIR) #-L/c/src/LVGLNKC/lvgl
 LIBS =  -llvgl
 
-CFLAGS= -Os -m68000 -Wall -DCPU=2 -Wno-unused-variable -Wno-unused-but-set-variable -Wno-switch -fomit-frame-pointer -nostartfiles -std=gnu99 -ffunction-sections -fdata-sections -Dndrcomp -DUSE_JADOS $(ISEARCH)
+CFLAGS= -Os -m68000 -Wall -DCPU=2 -Wno-unused-function -Wno-unused-variable -Wno-unused-but-set-variable -Wno-switch -fomit-frame-pointer -nostartfiles -std=gnu99 -ffunction-sections -fdata-sections -Dndrcomp -DUSE_JADOS $(ISEARCH)
 
-# Linker Flags
-LDFLAGS= -T $(COMMON_DIR)rm_ram1.ld -Wl,-Map,$(OUTDIR)$(TARGET).map $(LIBDIRS)
+# Linker Flags --gc-sections,
+LDFLAGS= -T $(COMMON_DIR)rm_ram1.ld -Wl,--gc-sections,-Map,$(OUTDIR)$(TARGET).map $(LIBDIRS)
 LDLIBS= -llvgl 
 
 # List of C sources

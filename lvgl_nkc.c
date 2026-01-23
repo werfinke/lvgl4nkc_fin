@@ -23,81 +23,114 @@ static lv_indev_t * indev_mouse;
 volatile int16_t mouse_x = 0;
 volatile int16_t mouse_y = 0;
 
-#define CURSOR_FG_COL (uint8_t)0xFFu
-#define CURSOR_BG_COL (uint8_t)0x80u
+#define CURSOR_FG_COL (uint8_t)32u
+#define CURSOR_BG_COL (uint8_t)128u
 
-const lv_image_dsc_t img_cursor_16;  /* your cursor image */
+const lv_image_dsc_t img_cursor;  /* your cursor image */
 
-/* 16x16 mouse cursor, L8 */
-static const uint8_t cursor_map_l8[16 * 16] __attribute__((aligned(LV_DRAW_BUF_ALIGN))) = {
+//muss woanders hin
+#define BYTE_AT(adr) (*(unsigned char  volatile *) adr)
 
+#define FPGA_GDP_FCOL_REG BYTE_AT(0xFFFFFFA0)
+#define FPGA_GDP_BCOL_REG BYTE_AT(0xFFFFFFA1)
+
+#define FPGA_GDP_CULT_REG     BYTE_AT(0xFFFFFFA4)  // active color entry
+#define FPGA_GDP_CULT_MSB_REG BYTE_AT(0xFFFFFFA5)  // 1bit
+#define FPGA_GDP_CULT_LSB_REG BYTE_AT(0xFFFFFFA6)  // 8bit
+
+void GDP_WAIT() {};
+
+static void initCULT_local() {
+
+  int MSB_col = 0;
+  int LSB_col = 0;
+
+  printf("%s\n", "CULT");
+  for (int i=0; i < 16; i++) {
+    GDP_WAIT(); FPGA_GDP_CULT_REG = i; 
+    GDP_WAIT(); LSB_col = FPGA_GDP_CULT_LSB_REG;
+    GDP_WAIT(); MSB_col = FPGA_GDP_CULT_MSB_REG;
+    
+    printf("%i:%i ", i, MSB_col + LSB_col);
+
+  }
+  printf("%s\n", "");
+  GDP_WAIT(); FPGA_GDP_CULT_REG = 0x00; 
+  GDP_WAIT(); FPGA_GDP_CULT_LSB_REG = 0b00000000; GDP_WAIT(); FPGA_GDP_CULT_MSB_REG = 0x00;   //0x00 BLACK
+  GDP_WAIT(); FPGA_GDP_CULT_REG = 0x01; 
+  GDP_WAIT(); FPGA_GDP_CULT_LSB_REG = 0b11111111; GDP_WAIT(); FPGA_GDP_CULT_MSB_REG = 0x01;   //0x01 WHITE
+  GDP_WAIT(); FPGA_GDP_CULT_REG = 0x02; 
+  GDP_WAIT(); FPGA_GDP_CULT_LSB_REG = 0b11111000; GDP_WAIT(); FPGA_GDP_CULT_MSB_REG = 0x01;   //0x02 YELLOW
+  GDP_WAIT(); FPGA_GDP_CULT_REG = 0x03; 
+  GDP_WAIT(); FPGA_GDP_CULT_LSB_REG = 0b00111000; GDP_WAIT(); FPGA_GDP_CULT_MSB_REG = 0x00;   //0x03 LIME
+  GDP_WAIT(); FPGA_GDP_CULT_REG = 0x04; 
+  GDP_WAIT(); FPGA_GDP_CULT_LSB_REG = 0b11000000; GDP_WAIT(); FPGA_GDP_CULT_MSB_REG = 0x01;   //0x04 RED
+  GDP_WAIT(); FPGA_GDP_CULT_REG = 0x05; 
+  GDP_WAIT(); FPGA_GDP_CULT_LSB_REG = 0b00000111; GDP_WAIT(); FPGA_GDP_CULT_MSB_REG = 0x00;   //0x05 BLUE
+  GDP_WAIT(); FPGA_GDP_CULT_REG = 0x06; 
+  GDP_WAIT(); FPGA_GDP_CULT_LSB_REG = 0b11000111; GDP_WAIT(); FPGA_GDP_CULT_MSB_REG = 0x01;  //0x06 FUCHSIA
+  GDP_WAIT(); FPGA_GDP_CULT_REG = 0x07; 
+  GDP_WAIT(); FPGA_GDP_CULT_LSB_REG = 0b00111111; GDP_WAIT(); FPGA_GDP_CULT_MSB_REG = 0x00;  //0x07 AQUA
+  GDP_WAIT(); FPGA_GDP_CULT_REG = 0x08; 
+  GDP_WAIT(); FPGA_GDP_CULT_LSB_REG = 0b10010010; GDP_WAIT(); FPGA_GDP_CULT_MSB_REG = 0x00;  //0x08 GRAY
+  GDP_WAIT(); FPGA_GDP_CULT_REG = 0x09; 
+  GDP_WAIT(); FPGA_GDP_CULT_LSB_REG = 0b00100100; GDP_WAIT(); FPGA_GDP_CULT_MSB_REG = 0x01;   //0x09 SILVER
+  GDP_WAIT(); FPGA_GDP_CULT_REG = 0x0a; 
+  GDP_WAIT(); FPGA_GDP_CULT_LSB_REG = 0b11011000; GDP_WAIT(); FPGA_GDP_CULT_MSB_REG = 0x00;  //0x0A OLIVE
+  GDP_WAIT(); FPGA_GDP_CULT_REG = 0x0b; 
+  GDP_WAIT(); FPGA_GDP_CULT_LSB_REG = 0b00011000; GDP_WAIT(); FPGA_GDP_CULT_MSB_REG = 0x00;   //0x0B GREEN
+  GDP_WAIT(); FPGA_GDP_CULT_REG = 0x0c; 
+  GDP_WAIT(); FPGA_GDP_CULT_LSB_REG = 0b11000000; GDP_WAIT(); FPGA_GDP_CULT_MSB_REG = 0x00;   //0x0C MAROON
+  GDP_WAIT(); FPGA_GDP_CULT_REG = 0x0d; 
+  GDP_WAIT(); FPGA_GDP_CULT_LSB_REG = 0b00000011; GDP_WAIT(); FPGA_GDP_CULT_MSB_REG = 0x00;   //0x0D NAVY
+  GDP_WAIT(); FPGA_GDP_CULT_REG = 0x0e; 
+  GDP_WAIT(); FPGA_GDP_CULT_LSB_REG = 0b11000011; GDP_WAIT(); FPGA_GDP_CULT_MSB_REG = 0x00;   //0s0E PURPLE
+  GDP_WAIT(); FPGA_GDP_CULT_REG = 0x0f; 
+  GDP_WAIT(); FPGA_GDP_CULT_LSB_REG = 0b00011011; GDP_WAIT(); FPGA_GDP_CULT_MSB_REG = 0x00;   //0x0F TEAL
+
+  printf("%s\n", "CULT");
+  for (int i=0; i < 16; i++) {
+    GDP_WAIT(); FPGA_GDP_CULT_REG = i; 
+    GDP_WAIT(); LSB_col = FPGA_GDP_CULT_LSB_REG;
+    GDP_WAIT(); MSB_col = FPGA_GDP_CULT_MSB_REG;
+    
+    printf("%i:%i ", i, MSB_col + LSB_col);
+
+  }
+  printf("%s\n", "");
+
+  memset((void*)GDP_MEM_PAGE0+(512*  0), 8, 512);  //just upper 4 bit = 0100 = 4 = RED
+  memset((void*)GDP_MEM_PAGE0+(512*128), 3, 512);  //just upper 4 bit = 0101 = 5 = BLUE
+  memset((void*)GDP_MEM_PAGE0+(512*256), 5, 512);  //just upper 4 bit = 0011 = 2 = YELLOW
+
+  FPGA_GDP_BCOL_REG = WHITE;
+  FPGA_GDP_FCOL_REG = YELLOW;
+}
+
+/* 8x8 arrow cursor, 1 byte per pixel (L8) */
+const uint8_t cursor_8x8_map[] __attribute__((aligned(LV_DRAW_BUF_ALIGN))) = {
     CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
-    CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
-
     CURSOR_FG_COL, CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
-    CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
-
+    CURSOR_FG_COL, CURSOR_FG_COL, CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
+    CURSOR_FG_COL, CURSOR_FG_COL, CURSOR_FG_COL, CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
+    CURSOR_FG_COL, CURSOR_FG_COL, CURSOR_FG_COL, CURSOR_FG_COL, CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
     CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
-    CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
-
     CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
-    CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
-
-    CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
-    CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
-
-    CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
-    CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
-
-    CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_FG_COL, CURSOR_BG_COL,
-    CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
-
-    CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_FG_COL,
-    CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
-
-    CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
-    CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
-
-    CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
-    CURSOR_BG_COL, CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
-
-    CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_FG_COL, CURSOR_FG_COL, CURSOR_FG_COL, CURSOR_FG_COL, CURSOR_FG_COL, CURSOR_BG_COL,
-    CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
-
-    CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
-    CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
-
-    CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
-    CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
-
-    CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
-    CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
-
-    CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
-    CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
-
-    CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
-    CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
-
+    CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_FG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL, CURSOR_BG_COL,
 };
 
-const lv_image_dsc_t img_mouse_cursor = {
-    .header = {
-        .cf = LV_COLOR_FORMAT_L8,
-        .w  = 16,
-        .h  = 16,
-        .stride = 16,
-        .magic = LV_IMAGE_HEADER_MAGIC
-    },
-    .data_size = sizeof(cursor_map_l8),
-    .data = cursor_map_l8,
+const lv_image_dsc_t cursor_8x8 = {
+    .header.cf = LV_COLOR_FORMAT_L8,
+    .header.w = 8,
+    .header.h = 8,
+    .data_size = 64,
+    .data = cursor_8x8_map,
 };
-
 
 void mouse_attach_cursor(void)
 {
     lv_obj_t * cursor = lv_image_create(lv_screen_active());
-    lv_image_set_src(cursor, &img_mouse_cursor);
+    lv_image_set_src(cursor, &cursor_8x8);
 
     /* Always on top */
     lv_obj_add_flag(cursor, LV_OBJ_FLAG_FLOATING);
@@ -109,12 +142,15 @@ static lv_obj_t * label;
 
 static void mouse_read_cb(lv_indev_t * indev, lv_indev_data_t * data)
 {
+    
+
     //(void) indev;
 
     static int16_t dx;
     static int16_t dy;
-    gp_get_mouse(&dx, &dy);  //rel. change since last poll
 
+    gp_get_mouse(&dx, &dy);  //rel. change since last poll
+   
     mouse_x += dx;
     mouse_y += -dy;
 
@@ -140,6 +176,7 @@ void doTick() {
 
 void hardware_init() {
     gp_clearscreen();  //set video memory to black for all 4 pages
+    //initCULT_local();
     _clock(&doTick);
 }
 
@@ -187,8 +224,16 @@ void my_disp_flush(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map)
         memcpy(dst, src, w);
     }
     
-    //debug - to see disp_flush runs, as per defined in BUF_LINES
-    /*gp_moveto((int)area->x1, 256-(int)area->y1);
+    //for (int i=0; i < 256; i++) {
+    //
+    //    memset((void*)GDP_MEM_PAGE0+(512*  i), i, 512);
+    //}
+
+    //memset((void*)GDP_MEM_PAGE0+(512*128), 2, 512);
+    //memset((void*)GDP_MEM_PAGE0+(512*256), 3, 512);
+
+    /*debug - to see disp_flush runs, as per defined in BUF_LINES
+    gp_moveto((int)area->x1, 256-(int)area->y1);
     gp_drawto((int)area->x1, 256-(int)area->y2);
     gp_drawto((int)area->x2, 256-(int)area->y2);
     gp_drawto((int)area->x2, 256-(int)area->y1);
@@ -217,7 +262,7 @@ static void slider_event_cb(lv_event_t * e)
     lv_obj_t * slider = lv_event_get_target_obj(e);
 
     /*Refresh the text*/
-    lv_label_set_text_fmt(label, "%" LV_PRId32, lv_slider_get_value(slider));
+    lv_label_set_text_fmt(label, "%" LV_PRId32, (int)lv_slider_get_value(slider));
     lv_obj_align_to(label, slider, LV_ALIGN_OUT_TOP_MID, 0, -15);    /*Align top of the slider*/
 }
 
@@ -233,20 +278,11 @@ int main(int argc, char* argv[]) {
 
     printf("%s %p\n", "GDP video memory at : ", (void*) GDP_MEM_PAGE0);
     printf("%s %p\n", "LVGL frame buffer at: ", (void*) &buf1);
-        
-    //testing, put someting in buffer
-    //memset((void*)buf1, 0xFF, sizeof(buf1));
-    
-    //testing, put someting in GDPvideo ram
-    //memset((void*)GDP_MEM_PAGE0+(512*  0), 0x55, 512);
-    //memset((void*)GDP_MEM_PAGE0+(512*128), 0x55, 512);
-    //memset((void*)GDP_MEM_PAGE0+(512*256), 0x55, 512);
-
     lv_init();
 
     disp = lv_display_create(LV_HOR_RES_MAX, LV_VER_RES_MAX);
     lv_display_set_color_format(disp, LV_COLOR_FORMAT_L8);
-    lut_init();
+    //lut_init();
 
     lv_display_set_buffers(disp, buf1, NULL, sizeof(buf1), LV_DISPLAY_RENDER_MODE_PARTIAL);
     lv_display_set_flush_cb(disp, my_disp_flush);
@@ -261,16 +297,11 @@ int main(int argc, char* argv[]) {
     lv_indev_set_read_cb(indev_mouse, mouse_read_cb);
 
     lv_obj_t * cursor = lv_image_create(lv_screen_active());
-    lv_image_set_src(cursor, &img_cursor_16);
+    lv_image_set_src(cursor, &img_cursor);
     lv_obj_add_flag(cursor, LV_OBJ_FLAG_FLOATING);
     lv_indev_set_cursor(indev_mouse, cursor);
 
     mouse_attach_cursor();
-
-
-
-
-
 
     /*Create UI */
     lv_obj_t * label1 = lv_label_create(lv_screen_active());
@@ -335,7 +366,7 @@ int main(int argc, char* argv[]) {
     tick = 0;
     ENABLE_CPU_INTERRUPTS; 
 
-    while (tick < 10000) {
+    while (tick < 5000) {
 
         //do someting
 
