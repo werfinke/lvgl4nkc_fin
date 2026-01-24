@@ -15,7 +15,7 @@
 #define GDP_MEM_PAGE3 ((void *)0x8C0000u)
 
 #define LV_HOR_RES_MAX   512
-#define LV_VER_RES_MAX   256  //change in GP: T=IO setzen, Adr: $7f  Data:1
+#define LV_VER_RES_MAX   512
 
 #define FB_STRIDE_BYTES 512
 
@@ -39,7 +39,7 @@ const lv_image_dsc_t img_cursor;  /* your cursor image */
 #define FPGA_GDP_CULT_MSB_REG BYTE_AT(0xFFFFFF4A)  // 1bit
 #define FPGA_GDP_CULT_LSB_REG BYTE_AT(0xFFFFFF4C)  // 8bit   */
 
-#define FPGA_GDP_MODE BYTE_AT(0xFFFFFFFE)  //FPGA-GDP Graphics mode
+#define FPGA_GDP_MODE BYTE_AT(0xFFFFFEFE)  //FPGA-GDP Graphics mode
 
 static inline __attribute__((always_inline)) void GDP_WAIT(void) {
    while(!(GDP.cmd & 0x04u)) {};
@@ -175,6 +175,7 @@ void doTick() {
 }
 
 void hardware_init() {
+    
     if (LV_VER_RES_MAX == 512) {
         GDP_WAIT(); 
         FPGA_GDP_MODE = 0b00000001; //512 x 512 mode
