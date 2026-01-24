@@ -15,9 +15,9 @@ How to use:
 Infos
    - lv_conf.h line 443: #define LV_USE_LOG 1  //Logging ist eingeschaltet und wird ueber printf ausgegeben
    - lvgl_nkc.c line 94: nuetzlich um aktuellen disp_flush() Bereich zu sehen
-   - FPGA-GDP video memory hat 8 bit pro pixel fuer 4 bit color look-up von 9 bit, daher ist LVGL als L8 color format konfiguriert
+   - FPGA-GDP video memory hat 8 bit pro pixel fuer 4 bit color look-up von 9 bit Palette (CULT), daher ist LVGL als L8 color format konfiguriert
    - Calendar widget wird nicht korrekt plaziert, y pos falsch
-   - rudimentärer NKC Maus support implementiert, noch ohne click
+   - rudimentärer NKC Maus support implementiert
      
 Mehr Infos zu LVGL gibt's hier: https://lvgl.io/
 
