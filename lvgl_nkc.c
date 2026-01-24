@@ -39,7 +39,7 @@ const lv_image_dsc_t img_cursor;  /* your cursor image */
 #define FPGA_GDP_CULT_MSB_REG BYTE_AT(0xFFFFFF4A)  // 1bit
 #define FPGA_GDP_CULT_LSB_REG BYTE_AT(0xFFFFFF4C)  // 8bit   */
 
-#define FPGA_GDP_MODE BYTE_AT(0xFFFFFFEE)  //FPGA-GDP Graphics mode
+#define FPGA_GDP_MODE BYTE_AT(0xFFFFFFFE)  //FPGA-GDP Graphics mode
 
 static inline __attribute__((always_inline)) void GDP_WAIT(void) {
    while(!(GDP.cmd & 0x04u)) {};
@@ -175,9 +175,12 @@ void doTick() {
 }
 
 void hardware_init() {
-    if (LV_VER_RES_MAX == 512) {GDP_WAIT(); FPGA_GDP_MODE = 0b00000001;}  //512 x 512 mode, obacht: colors change !
+    if (LV_VER_RES_MAX == 512) {
+        GDP_WAIT(); 
+        FPGA_GDP_MODE = 0b00000001; //512 x 512 mode
+    }  
     gp_clearscreen();  
-    initCULT_local();  //not working
+    initCULT_local();  
     _clock(&doTick); 
 }
 
