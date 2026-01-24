@@ -63,7 +63,7 @@ static void initCULT_local() {
     GDP_WAIT(); LSB_col = FPGA_GDP_CULT_LSB_REG;
     GDP_WAIT(); MSB_col = FPGA_GDP_CULT_MSB_REG;
     
-    printf("%i:%i ", i, MSB_col + LSB_col);
+    printf("%i:%u ", i, MSB_col + LSB_col);
 
   }
   printf("%s\n", "");
@@ -83,8 +83,13 @@ static void initCULT_local() {
   GDP_WAIT(); FPGA_GDP_CULT_LSB_REG = 0b11000111; GDP_WAIT(); FPGA_GDP_CULT_MSB_REG = 0x01;  //0x06 FUCHSIA
   GDP_WAIT(); FPGA_GDP_CULT_REG = 0x07; 
   GDP_WAIT(); FPGA_GDP_CULT_LSB_REG = 0b00111111; GDP_WAIT(); FPGA_GDP_CULT_MSB_REG = 0x00;  //0x07 AQUA
+  
   GDP_WAIT(); FPGA_GDP_CULT_REG = 0x08; 
-  GDP_WAIT(); FPGA_GDP_CULT_LSB_REG = 0b10010010; GDP_WAIT(); FPGA_GDP_CULT_MSB_REG = 0x00;  //0x08 GRAY
+  GDP_WAIT(); FPGA_GDP_CULT_LSB_REG = 0b11000000; GDP_WAIT(); FPGA_GDP_CULT_MSB_REG = 0x01;   //0x04 RED
+
+  //GDP_WAIT(); FPGA_GDP_CULT_REG = 0x08; 
+  //GDP_WAIT(); FPGA_GDP_CULT_LSB_REG = 0b10010010; GDP_WAIT(); FPGA_GDP_CULT_MSB_REG = 0x00;  //0x08 GRAY
+  
   GDP_WAIT(); FPGA_GDP_CULT_REG = 0x09; 
   GDP_WAIT(); FPGA_GDP_CULT_LSB_REG = 0b00100100; GDP_WAIT(); FPGA_GDP_CULT_MSB_REG = 0x01;   //0x09 SILVER
   GDP_WAIT(); FPGA_GDP_CULT_REG = 0x0a; 
@@ -106,7 +111,7 @@ static void initCULT_local() {
     GDP_WAIT(); LSB_col = FPGA_GDP_CULT_LSB_REG;
     GDP_WAIT(); MSB_col = FPGA_GDP_CULT_MSB_REG;
     
-    printf("%i:%i ", i, MSB_col + LSB_col);
+    printf("%i:%u ", i, MSB_col + LSB_col);
 
   }
   printf("%s\n", "");
@@ -265,10 +270,6 @@ static void btn_event_cb(lv_event_t * e)
         /*Get the first child of the button which is the label and change its text*/
         lv_obj_t * label = lv_obj_get_child(btn, 0);
         lv_label_set_text_fmt(label, "NKC: %d", cnt);
-
-        for (int i=0; i < 256; i++) {
-            memset((void*)GDP_MEM_PAGE0+(512*  i), i, 512);
-        }
     }
 }
 
