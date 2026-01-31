@@ -44,7 +44,7 @@ LIBS =  -llvgl
 CFLAGS= -Os -m68000 -Wall -DCPU=2 -Wno-unused-function -Wno-unused-variable -Wno-unused-but-set-variable -Wno-switch -fomit-frame-pointer -nostartfiles -std=gnu99 -ffunction-sections -fdata-sections -Dndrcomp -DUSE_JADOS $(ISEARCH)
 
 # Linker Flags --gc-sections,
-LDFLAGS= -T $(COMMON_DIR)rm_ram1.ld -Wl,--gc-sections,-Map,$(OUTDIR)$(TARGET).map $(LIBDIRS)
+LDFLAGS= -T $(COMMON_DIR)rm_ram1.ld -Wl,--gc-sections,-flto,-Map,$(OUTDIR)$(TARGET).map $(LIBDIRS)
 LDLIBS= -llvgl 
 
 # List of C sources
